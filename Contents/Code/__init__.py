@@ -10,29 +10,44 @@ VIMCASTS_ART           = 'art-default.jpg'
 ###############################################################################
 def Start():
     Plugin.AddPrefixHandler("/video/vimcasts", VideoMenu, L('vimcasts'), VIMCASTS_ICON, VIMCASTS_ART)
-    Plugin.AddViewGroup("Details", viewMode="InfoList", mediaType="items")
-    MediaContainer.title1 = L('vimcasts')
-    MediaContainer.art    = R(VIMCASTS_ART)
+    Plugin.AddViewGroup("Details", viewMode = "InfoList", mediaType = "items")
+
+    ObjectContainer.title1 = L('vimcasts')
+    ObjectContainer.view_group = 'Details'
+    ObjectContainer.art = R(VIMCASTS_ART)
+
+    DirectoryObject.thumb = R(VIMCASTS_ICON)
+    DirectoryObject.art = R(VIMCASTS_ART)
+    VideoClipObject.thumb = R(VIMCASTS_ICON)
+    VideoClipObject.art = R(VIMCASTS_ART)
+
     HTTP.CacheTime        = CACHE_1HOUR
 
 def VideoMenu():
-    dir = MediaContainer(mediaType='video', viewGroup='Details')
+    oc = ObjectContainer()
     episodes = JSON.ObjectFromURL(VIMCASTS_FEED_URL)['episodes']
     episodes.reverse()  # Newest first
     for episode in episodes:
         try:
-            url     = episode['quicktime']['url']
+            url     = episode['url']
             title   = F('episode', episode['episode_number'], episode['title'])
             date    = parsedate(episode['published_at'])
             date    = datetime(*date[:6])
             summary = dehtmlize(episode['abstract'].strip())
             thumb   = episode['poster']
-            dir.Append(VideoItem(url, title=title, summary=summary, thumb=thumb,
-                                 subtitle=date.strftime('%A, %B %e %Y')))
+
+
+            oc.add(VideoClipObject(
+                url = url,
+                title = title,
+                summary = summary,
+                thumb = thumb,
+                originally_available_at = date))
+
         except AttributeError:
             Log("Something odd with episode, skipping: %s" %
                     episode, debugOnly=False)
-    return dir
+    return oc
 
 ##
 # Removes HTML tags from a text string and converts character entities.
@@ -65,4 +80,3 @@ def dehtmlize(text):
                     return unicode(entity, "iso-8859-1")
         return text # leave as is
     return String.StripTags(re.sub("&#?\w+;", convert_entities, text))
-
