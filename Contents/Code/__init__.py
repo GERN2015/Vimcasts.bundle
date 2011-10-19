@@ -21,7 +21,7 @@ def Start():
     VideoClipObject.thumb = R(VIMCASTS_ICON)
     VideoClipObject.art = R(VIMCASTS_ART)
 
-    HTTP.CacheTime        = CACHE_1HOUR
+    HTTP.CacheTime = CACHE_1HOUR
 
 def VideoMenu():
     oc = ObjectContainer()
@@ -35,7 +35,6 @@ def VideoMenu():
             date    = datetime(*date[:6])
             summary = dehtmlize(episode['abstract'].strip())
             thumb   = episode['poster']
-
 
             oc.add(VideoClipObject(
                 url = url,
